@@ -1,6 +1,8 @@
-# Recipe Generator (Next.js)
+# Recipe Generator
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<!-- demo image -->
+
+![Recipe Generator Demo](/public/demo.png)
 
 ## About This Project
 
