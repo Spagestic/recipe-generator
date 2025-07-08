@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,57 +103,146 @@ export default function StreamingPage() {
         </Button>
       </form>
       {error && <div className="text-destructive">{error}</div>}
-      <pre ref={outputRef} className="text-wrap bg-accent p-4 rounded mb-4">
-        {output ? JSON.stringify(output, null, 2) : "No output yet."}
-      </pre>
+      <div className="flex justify-center">
+        <pre
+          ref={outputRef}
+          className="text-sm text-wrap bg-accent p-4 rounded "
+        >
+          {output ? JSON.stringify(output, null, 2) : "No output yet."}
+        </pre>
 
-      {/* Improved UI rendering for the recipe */}
-      {output &&
-        output.recipe &&
-        Array.isArray(output.recipe.ingredients) &&
-        Array.isArray(output.recipe.steps) && (
-          <div className="bg-card p-6 rounded shadow space-y-4 border">
-            <h3 className="text-xl font-bold mb-2">{output.recipe.name}</h3>
-            <p className="text-muted-foreground mb-4">
-              {output.recipe.description}
-            </p>
-            <div>
-              <span className="font-semibold">Ingredients:</span>
-              <Table className="mt-2">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/2">Name</TableHead>
-                    <TableHead className="w-1/2">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {output.recipe.ingredients.map((ing: any, i: number) => (
-                    <TableRow key={i}>
-                      <TableCell className="">{ing.name}</TableCell>
-                      <TableCell>
-                        {ing.amount ? (
-                          <span className="text-muted-foreground">
-                            {ing.amount}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <div>
-              <span className="font-semibold">Steps:</span>
-              <ol className="list-decimal list-inside ml-4 mt-1 space-y-1">
-                {output.recipe.steps.map((step: string, i: number) => (
-                  <li key={i}>{step}</li>
-                ))}
-              </ol>
-            </div>
-          </div>
+        {/* Improved UI rendering for the recipe */}
+        {output && (
+          <>
+            {output.recipe &&
+            Array.isArray(output.recipe.ingredients) &&
+            Array.isArray(output.recipe.steps) ? (
+              <div className="bg-card p-6 rounded shadow space-y-4 border">
+                <h3 className="text-xl font-bold mb-2">{output.recipe.name}</h3>
+                <p className="text-muted-foreground mb-4">
+                  {output.recipe.description}
+                </p>
+                <div>
+                  <span className="font-semibold">Ingredients:</span>
+                  <Table className="mt-2">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/2">Name</TableHead>
+                        <TableHead className="w-1/2">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {output.recipe.ingredients.map((ing: any, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell className="">{ing.name}</TableCell>
+                          <TableCell>
+                            {ing.amount ? (
+                              <span className="text-muted-foreground">
+                                {ing.amount}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div>
+                  <span className="font-semibold">Steps:</span>
+                  <ol className="list-decimal list-inside ml-4 mt-1 space-y-1">
+                    {output.recipe.steps.map((step: string, i: number) => (
+                      <li key={i}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+            ) : (
+              // Show partial UI as soon as any part of the recipe is available
+              <div className="bg-card p-6 rounded shadow space-y-4 border opacity-60">
+                <h3 className="text-xl font-bold mb-2">
+                  {output.recipe?.name || (
+                    <span className="italic text-muted-foreground">
+                      Loading name...
+                    </span>
+                  )}
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  {output.recipe?.description || (
+                    <span className="italic">Loading description...</span>
+                  )}
+                </p>
+                <div>
+                  <span className="font-semibold">Ingredients:</span>
+                  <Table className="mt-2">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-1/2">Name</TableHead>
+                        <TableHead className="w-1/2">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Array.isArray(output.recipe?.ingredients) ? (
+                        output.recipe.ingredients.map((ing: any, i: number) => (
+                          <TableRow key={i}>
+                            <TableCell className="">
+                              {ing.name || (
+                                <span className="italic text-muted-foreground">
+                                  ...
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {ing.amount ? (
+                                <span className="text-muted-foreground">
+                                  {ing.amount}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={2}>
+                            <span className="italic text-muted-foreground">
+                              Loading ingredients...
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div>
+                  <span className="font-semibold">Steps:</span>
+                  <ol className="list-decimal list-inside ml-4 mt-1 space-y-1">
+                    {Array.isArray(output.recipe?.steps) ? (
+                      output.recipe.steps.map((step: string, i: number) => (
+                        <li key={i}>
+                          {step || (
+                            <span className="italic text-muted-foreground">
+                              ...
+                            </span>
+                          )}
+                        </li>
+                      ))
+                    ) : (
+                      <li>
+                        <span className="italic text-muted-foreground">
+                          Loading steps...
+                        </span>
+                      </li>
+                    )}
+                  </ol>
+                </div>
+              </div>
+            )}
+          </>
         )}
+      </div>
     </div>
   );
 }
