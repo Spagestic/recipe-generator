@@ -7,6 +7,7 @@ export const runtime = "edge";
 const schema = z.object({
   recipe: z.object({
     name: z.string(),
+    description: z.string(),
     ingredients: z.array(
       z.object({
         name: z.string(),
