@@ -1,103 +1,456 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+
+export default function HomePage() {
+  const [activeSection, setActiveSection] = useState<"hero" | "generator">(
+    "hero"
+  );
+  const [dishName, setDishName] = useState("");
+
+  const handleGenerateRecipe = (dish: string) => {
+    setDishName(dish);
+    setActiveSection("generator");
+  };
+
+  const handleBackToHome = () => {
+    setActiveSection("hero");
+    setDishName("");
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen flex flex-col">
+      <style jsx global>{`
+        :root {
+          --primary: #d2691e;
+          --primary-foreground: #ffffff;
+          --background: #f7f5f3;
+          --foreground: #1f2937;
+          --card: #ffffff;
+          --card-foreground: #1f2937;
+          --secondary: #f3f4f6;
+          --secondary-foreground: #374151;
+          --muted: #f9fafb;
+          --muted-foreground: #6b7280;
+          --border: #e5e7eb;
+          --input: #e5e7eb;
+          --ring: #d2691e;
+          --destructive: #ef4444;
+          --text-dark: #1f2937;
+          --font-heading: Inter;
+          --font-body: Inter;
+        }
+      `}</style>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      <main className="flex-1">
+        {activeSection === "hero" && (
+          <SimpleCenteredWithCallback onGenerateRecipe={handleGenerateRecipe} />
+        )}
+        {activeSection === "generator" && (
+          <div>
+            <div className="bg-[#F7F5F3] px-6 py-4">
+              <div className="max-w-4xl mx-auto">
+                <button
+                  onClick={handleBackToHome}
+                  className="text-[var(--primary)] hover:text-[#B85A1A] font-medium font-[var(--font-body)]"
+                >
+                  ← Back to Home
+                </button>
+              </div>
+            </div>
+            <RecipeGeneratorWithDish initialDish={dishName} />
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+    </div>
+  );
+}
+
+function SimpleCenteredWithCallback({
+  onGenerateRecipe,
+}: {
+  onGenerateRecipe: (dish: string) => void;
+}) {
+  const [dishName, setDishName] = useState("");
+
+  const handleGenerateRecipe = () => {
+    if (dishName.trim()) {
+      onGenerateRecipe(dishName.trim());
+    }
+  };
+
+  return (
+    <div className="bg-[#F7F5F3]">
+      <div className="relative isolate px-6 pt-0 lg:px-8">
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          <div
+            style={{
+              clipPath:
+                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+            }}
+            className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#D2691E] to-[#E67E22] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+
+        <div className="mx-auto max-w-2xl py-18 sm:py-48 lg:py-56">
+          <div className="text-center">
+            <h1 className="text-5xl font-semibold tracking-tight text-balance text-[var(--text-dark)] sm:text-7xl ">
+              Discover Delicious Recipes
+            </h1>
+            <div className="mt-8 text-sm font-normal text-pretty text-gray-600 sm:text-xl/8 ">
+              Simply enter any dish name and get complete recipes with
+              ingredients and step-by-step instructions.
+            </div>
+
+            <div className="mt-10 flex flex-col items-center gap-4 max-w-xl mx-auto">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Enter a dish name..."
+                  value={dishName}
+                  onChange={(e) => setDishName(e.target.value)}
+                  className="w-full px-6 py-4 text-lg rounded-xl border-2 border-[var(--border)] bg-white focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 font-[var(--font-body)] shadow-sm"
+                  onKeyDown={(e) => e.key === "Enter" && handleGenerateRecipe()}
+                />
+                <svg
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                  />
+                </svg>
+              </div>
+
+              <button
+                onClick={handleGenerateRecipe}
+                className="w-full bg-[var(--primary)] hover:bg-[#B85A1A] text-[var(--primary-foreground)] font-semibold py-4 px-8 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-200 font-[var(--font-body)]"
+              >
+                Generate Recipe
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <div
+            style={{
+              clipPath:
+                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+            }}
+            className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#D2691E] to-[#E67E22] opacity-20 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecipeGeneratorWithDish({ initialDish }: { initialDish: string }) {
+  const [dishName, setDishName] = useState(initialDish);
+  const [isLoading, setIsLoading] = useState(false);
+  const [recipe, setRecipe] = useState<any>(null);
+  const [error, setError] = useState("");
+
+  const generateRecipe = async () => {
+    if (!dishName.trim()) {
+      setError("Please enter a dish name");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    setRecipe(null);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Hard-coded hummus recipe for development/testing
+      const mockRecipe = {
+        name: "Hummus",
+        ingredients: [
+          {
+            name: "Chickpeas",
+            amount: "1 can (15 oz), drained and rinsed",
+          },
+          {
+            name: "Tahini",
+            amount: "1/4 cup",
+          },
+          {
+            name: "Garlic",
+            amount: "1 clove, minced",
+          },
+          {
+            name: "Lemon juice",
+            amount: "2 tablespoons",
+          },
+          {
+            name: "Olive oil",
+            amount: "2 tablespoons",
+          },
+          {
+            name: "Salt",
+            amount: "1/2 teaspoon",
+          },
+          {
+            name: "Cumin",
+            amount: "1/2 teaspoon, ground",
+          },
+          {
+            name: "Paprika",
+            amount: "1/4 teaspoon, for garnish",
+          },
+          {
+            name: "Parsley",
+            amount: "1 tablespoon, chopped, for garnish",
+          },
+        ],
+        steps: [
+          "In a food processor, combine the chickpeas, tahini, garlic, lemon juice, olive oil, salt, and cumin.",
+          "Process until smooth, scraping down the sides of the bowl as needed.",
+          "Taste and adjust the seasoning if necessary.",
+          "Transfer the hummus to a serving bowl, drizzle with additional olive oil, and garnish with paprika and parsley.",
+          "Serve with pita bread, vegetables, or crackers.",
+        ],
+      };
+
+      setRecipe(mockRecipe);
+    } catch (err) {
+      setError("Failed to generate recipe. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (initialDish) {
+      generateRecipe();
+    }
+  }, [initialDish]);
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      generateRecipe();
+    }
+  };
+
+  return (
+    <div className="bg-background min-h-screen w-full">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <svg
+              className="h-8 w-8 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+              />
+            </svg>
+            <h1 className="text-4xl font-bold text-foreground font-[var(--font-heading)]">
+              Recipe Generator
+            </h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-[var(--font-body)]">
+            Enter any dish name and get a complete recipe with ingredients and
+            step-by-step instructions
+          </p>
+        </div>
+
+        <div className="mb-8 bg-card border border-border rounded-lg">
+          <div className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Enter a dish name..."
+                  value={dishName}
+                  onChange={(e) => setDishName(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="w-full h-12 px-4 text-lg bg-background border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-ring outline-none font-[var(--font-body)]"
+                  disabled={isLoading}
+                />
+              </div>
+              <button
+                onClick={generateRecipe}
+                disabled={isLoading || !dishName.trim()}
+                className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md font-[var(--font-body)] disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="h-4 w-4 mr-2 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generating...
+                  </div>
+                ) : (
+                  "Generate Recipe"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-8 border border-destructive/50 bg-destructive/10 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg
+                className="h-4 w-4 text-destructive mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="text-destructive font-medium font-[var(--font-body)]">
+                {error}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="mb-8 bg-card border border-border rounded-lg">
+            <div className="p-12 text-center">
+              <svg
+                className="h-12 w-12 animate-spin text-primary mx-auto mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <h3 className="text-xl font-semibold text-foreground mb-2 font-[var(--font-heading)]">
+                Generating Your Recipe
+              </h3>
+              <p className="text-muted-foreground font-[var(--font-body)]">
+                This may take a few moments...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {recipe && !isLoading && (
+          <div className="space-y-8">
+            <div className="bg-card border border-border rounded-lg">
+              <div className="p-6 pb-4">
+                <h2 className="text-2xl font-semibold text-foreground mb-2 font-[var(--font-heading)]">
+                  {recipe.name}
+                </h2>
+                <p className="text-muted-foreground text-lg font-[var(--font-body)]">
+                  A delicious Middle Eastern chickpea dip that's perfect as an
+                  appetizer or snack.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-card border border-border rounded-lg h-fit">
+                <div className="p-6">
+                  <h3 className="text-xl text-foreground flex items-center gap-2 mb-4 font-[var(--font-heading)]">
+                    Ingredients
+                  </h3>
+                </div>
+                <div className="p-6 pt-0">
+                  <div className="space-y-3">
+                    {recipe.ingredients.map(
+                      (ingredient: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-start p-3 rounded-lg bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-colors"
+                        >
+                          <span className="font-medium text-foreground font-[var(--font-body)]">
+                            {ingredient.name}
+                          </span>
+                          <span className="text-muted-foreground text-sm font-medium ml-4 text-right font-[var(--font-body)]">
+                            {ingredient.amount}
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-card border border-border rounded-lg h-fit">
+                <div className="p-6">
+                  <h3 className="text-xl text-foreground flex items-center gap-2 mb-4 font-[var(--font-heading)]">
+                    Instructions
+                  </h3>
+                </div>
+                <div className="p-6 pt-0">
+                  <div className="space-y-4">
+                    {recipe.steps.map((step: string, index: number) => (
+                      <div
+                        key={index}
+                        className="flex gap-4 p-4 rounded-lg bg-secondary/30 border border-border/50"
+                      >
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center font-[var(--font-body)]">
+                            {index + 1}
+                          </div>
+                        </div>
+                        <p className="text-foreground leading-relaxed pt-1 font-[var(--font-body)]">
+                          {step}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
