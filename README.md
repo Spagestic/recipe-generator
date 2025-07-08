@@ -1,8 +1,28 @@
+# Recipe Generator (Next.js)
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## About This Project
+
+This project is an AI-powered recipe generator. Enter any dish name and get a complete recipe with ingredients and step-by-step instructions.
+
+**Powered by [Mistral AI API](https://mistral.ai/):**
+
+- Uses the Mistral AI API to generate recipes in real time.
+- Streams recipe data from the API for a fast, interactive experience.
 
 ## Getting Started
 
-First, run the development server:
+First, set up your Mistral API key:
+
+1. Copy `.example.env` to `.env.local` and add your MISTRAL_API_KEY:
+
+```bash
+cp .example.env .env.local
+# Edit .env.local and set your MISTRAL_API_KEY
+```
+
+2. Run the development server:
 
 ```bash
 npm run dev
