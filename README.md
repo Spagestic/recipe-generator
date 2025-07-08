@@ -3,6 +3,7 @@
 <!-- demo image -->
 
 ![Recipe Generator Demo](/public/demo.png)
+![Recipe Generator Example](/public/example.png)
 
 ## About This Project
 
