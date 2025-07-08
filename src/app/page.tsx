@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -163,6 +165,37 @@ function RecipeGeneratorWithDish({ initialDish }: { initialDish: string }) {
   const [recipe, setRecipe] = useState<any>(null);
   const [error, setError] = useState("");
 
+  // Helper to parse NDJSON stream and accumulate recipe
+  async function parseNDJSONStream(
+    stream: ReadableStream<Uint8Array>,
+    onData: (obj: any) => void,
+    onDone: () => void
+  ) {
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop()!;
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            onData(JSON.parse(line));
+          } catch {}
+        }
+      }
+    }
+    if (buffer.trim()) {
+      try {
+        onData(JSON.parse(buffer));
+      } catch {}
+    }
+    onDone();
+  }
+
   const generateRecipe = async () => {
     if (!dishName.trim()) {
       setError("Please enter a dish name");
@@ -174,59 +207,34 @@ function RecipeGeneratorWithDish({ initialDish }: { initialDish: string }) {
     setRecipe(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Hard-coded hummus recipe for development/testing
-      const mockRecipe = {
-        name: "Hummus",
-        ingredients: [
-          {
-            name: "Chickpeas",
-            amount: "1 can (15 oz), drained and rinsed",
-          },
-          {
-            name: "Tahini",
-            amount: "1/4 cup",
-          },
-          {
-            name: "Garlic",
-            amount: "1 clove, minced",
-          },
-          {
-            name: "Lemon juice",
-            amount: "2 tablespoons",
-          },
-          {
-            name: "Olive oil",
-            amount: "2 tablespoons",
-          },
-          {
-            name: "Salt",
-            amount: "1/2 teaspoon",
-          },
-          {
-            name: "Cumin",
-            amount: "1/2 teaspoon, ground",
-          },
-          {
-            name: "Paprika",
-            amount: "1/4 teaspoon, for garnish",
-          },
-          {
-            name: "Parsley",
-            amount: "1 tablespoon, chopped, for garnish",
-          },
-        ],
-        steps: [
-          "In a food processor, combine the chickpeas, tahini, garlic, lemon juice, olive oil, salt, and cumin.",
-          "Process until smooth, scraping down the sides of the bowl as needed.",
-          "Taste and adjust the seasoning if necessary.",
-          "Transfer the hummus to a serving bowl, drizzle with additional olive oil, and garnish with paprika and parsley.",
-          "Serve with pita bread, vegetables, or crackers.",
-        ],
-      };
-
-      setRecipe(mockRecipe);
+      const response = await fetch("/api/stream-object", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: dishName }),
+      });
+      if (!response.body) throw new Error("No response body");
+      let latestRecipe: any = {};
+      let gotAny = false;
+      await parseNDJSONStream(
+        response.body,
+        (obj) => {
+          if (obj.recipe) {
+            gotAny = true;
+            // Merge new fields into latestRecipe
+            latestRecipe = { ...latestRecipe, ...obj.recipe };
+            setRecipe({
+              name: latestRecipe.name,
+              ingredients: latestRecipe.ingredients,
+              steps: latestRecipe.steps,
+            });
+          }
+        },
+        () => {
+          if (!gotAny) {
+            setError("No recipe found in response.");
+          }
+        }
+      );
     } catch (err) {
       setError("Failed to generate recipe. Please try again.");
     } finally {
@@ -238,6 +246,7 @@ function RecipeGeneratorWithDish({ initialDish }: { initialDish: string }) {
     if (initialDish) {
       generateRecipe();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialDish]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -381,71 +390,39 @@ function RecipeGeneratorWithDish({ initialDish }: { initialDish: string }) {
 
         {recipe && !isLoading && (
           <div className="space-y-8">
+            {/* Recipe Header */}
             <div className="bg-card border border-border rounded-lg">
               <div className="p-6 pb-4">
                 <h2 className="text-2xl font-semibold text-foreground mb-2 font-[var(--font-heading)]">
-                  {recipe.name}
+                  {recipe.name || "Recipe"}
                 </h2>
-                <p className="text-muted-foreground text-lg font-[var(--font-body)]">
-                  A delicious Middle Eastern chickpea dip that's perfect as an
-                  appetizer or snack.
-                </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-card border border-border rounded-lg h-fit">
-                <div className="p-6">
-                  <h3 className="text-xl text-foreground flex items-center gap-2 mb-4 font-[var(--font-heading)]">
-                    Ingredients
-                  </h3>
-                </div>
-                <div className="p-6 pt-0">
-                  <div className="space-y-3">
-                    {recipe.ingredients.map(
-                      (ingredient: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-start p-3 rounded-lg bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-colors"
-                        >
-                          <span className="font-medium text-foreground font-[var(--font-body)]">
-                            {ingredient.name}
-                          </span>
-                          <span className="text-muted-foreground text-sm font-medium ml-4 text-right font-[var(--font-body)]">
-                            {ingredient.amount}
-                          </span>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
+              {/* Ingredients Section */}
+              <div className="bg-card border border-border rounded-lg h-fit p-6">
+                <h3 className="text-xl font-semibold mb-4">Ingredients</h3>
+                <ul className="space-y-2">
+                  {(recipe.ingredients || []).map(
+                    (ingredient: any, idx: number) => (
+                      <li key={idx} className="flex justify-between">
+                        <span>{ingredient.name}</span>
+                        <span>{ingredient.amount}</span>
+                      </li>
+                    )
+                  )}
+                </ul>
               </div>
 
-              <div className="bg-card border border-border rounded-lg h-fit">
-                <div className="p-6">
-                  <h3 className="text-xl text-foreground flex items-center gap-2 mb-4 font-[var(--font-heading)]">
-                    Instructions
-                  </h3>
-                </div>
-                <div className="p-6 pt-0">
-                  <div className="space-y-4">
-                    {recipe.steps.map((step: string, index: number) => (
-                      <div
-                        key={index}
-                        className="flex gap-4 p-4 rounded-lg bg-secondary/30 border border-border/50"
-                      >
-                        <div className="flex-shrink-0">
-                          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center font-[var(--font-body)]">
-                            {index + 1}
-                          </div>
-                        </div>
-                        <p className="text-foreground leading-relaxed pt-1 font-[var(--font-body)]">
-                          {step}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {/* Steps Section */}
+              <div className="bg-card border border-border rounded-lg h-fit p-6">
+                <h3 className="text-xl font-semibold mb-4">Instructions</h3>
+                <ol className="list-decimal list-inside space-y-2">
+                  {(recipe.steps || []).map((step: string, idx: number) => (
+                    <li key={idx}>{step}</li>
+                  ))}
+                </ol>
               </div>
             </div>
           </div>
