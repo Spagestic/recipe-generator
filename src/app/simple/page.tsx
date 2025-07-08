@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,24 +15,31 @@ export default function StreamingPage() {
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState<any>(null);
   const [streaming, setStreaming] = useState(false);
+  const [stage, setStage] = useState<
+    "idle" | "preparing" | "waiting" | "streaming" | "done"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
   const outputRef = useRef<HTMLPreElement>(null);
 
   async function handleStream() {
     setStreaming(true);
+    setStage("preparing");
     setOutput(null);
     setError(null);
     try {
+      setStage("waiting");
       const res = await fetch("/api/stream-object", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
       if (!res.body) throw new Error("No response body");
+      setStage("streaming");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       const partials: any[] = [];
+      let gotFirst = false;
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
@@ -46,14 +52,20 @@ export default function StreamingPage() {
               const obj = JSON.parse(line);
               partials.push(obj);
               setOutput(obj); // Show latest partial
+              if (!gotFirst) {
+                setStage("streaming");
+                gotFirst = true;
+              }
             } catch {
               // Ignore JSON parse errors for incomplete lines
             }
           }
         }
       }
+      setStage("done");
     } catch (e: any) {
       setError(e.message || "Streaming error");
+      setStage("idle");
     } finally {
       setStreaming(false);
     }
@@ -82,7 +94,11 @@ export default function StreamingPage() {
           disabled={streaming || !prompt.trim()}
           style={{ marginLeft: 8 }}
         >
-          {streaming ? "Streaming..." : "Generate"}
+          {stage === "idle" && "Generate"}
+          {stage === "preparing" && "Preparing..."}
+          {stage === "waiting" && "Waiting for response..."}
+          {stage === "streaming" && "Streaming..."}
+          {stage === "done" && "Done"}
         </Button>
       </form>
       {error && <div className="text-destructive">{error}</div>}
@@ -97,6 +113,9 @@ export default function StreamingPage() {
         Array.isArray(output.recipe.steps) && (
           <div className="bg-card p-6 rounded shadow space-y-4 border">
             <h3 className="text-xl font-bold mb-2">{output.recipe.name}</h3>
+            <p className="text-muted-foreground mb-4">
+              {output.recipe.description}
+            </p>
             <div>
               <span className="font-semibold">Ingredients:</span>
               <Table className="mt-2">
